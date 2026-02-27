@@ -119,7 +119,8 @@ in
           done
 
           # Compile and run the target spec generator
-          rustc "${ksource}/scripts/generate_rust_target.rs" \
+          rustc --edition 2021 \
+            "${ksource}/scripts/generate_rust_target.rs" \
             -o "$_writable_kdir/_generate_rust_target"
           cat "${kdir}/include/config/auto.conf" \
             | "$_writable_kdir/_generate_rust_target" \
