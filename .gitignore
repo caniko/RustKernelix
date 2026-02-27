@@ -1,0 +1,21 @@
+# Kernel module build artifacts
+*.o
+*.ko
+*.ko.cmd
+*.mod
+*.mod.c
+*.mod.cmd
+.*.cmd
+modules.order
+Module.symvers
+.tmp_versions/
+
+# Nix
+result
+result-*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
