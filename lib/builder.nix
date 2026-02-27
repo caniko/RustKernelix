@@ -106,9 +106,16 @@ in
 
           _writable_kdir=$(mktemp -d)
 
-          # Symlink all top-level items from the original KDIR
+          # Symlink all top-level items from the original KDIR.
+          # The Makefile must be copied (not symlinked) because Kbuild's
+          # outputmakefile target overwrites it when building out-of-tree.
           for item in ${kdir}/*; do
-            ln -sf "$item" "$_writable_kdir/$(basename "$item")"
+            _name=$(basename "$item")
+            if [ "$_name" = "Makefile" ]; then
+              cp "$item" "$_writable_kdir/Makefile"
+            else
+              ln -sf "$item" "$_writable_kdir/$_name"
+            fi
           done
 
           # Replace scripts symlink with a writable directory
