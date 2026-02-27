@@ -27,6 +27,14 @@
 
   kdir = "${kernel.dev}/lib/modules/${kernel.modDirVersion}/build";
 
+  # kernel.makeFlags includes flags intended for the kernel's own build
+  # (e.g., O=$(buildRoot), --eval=undefine modules) that break out-of-tree
+  # module builds. Filter to only keep variable assignments (NAME=VALUE)
+  # which carry the toolchain paths, ARCH, CROSS_COMPILE, etc.
+  moduleMakeFlags = builtins.filter (flag:
+    !(lib.hasPrefix "O=" flag) && !(lib.hasPrefix "--eval=" flag)
+  ) kernel.makeFlags;
+
   # Eval-time validation: if rustcVersion is specified, verify rust-overlay
   # knows about it. This catches typos and unsupported versions immediately
   # rather than at build time.
@@ -45,7 +53,7 @@ in
       nativeBuildInputs = kernel.moduleBuildDependencies;
 
       makeFlags =
-        kernel.makeFlags
+        moduleMakeFlags
         ++ [
           "KDIR=${kdir}"
           "LLVM=1"
