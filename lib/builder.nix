@@ -112,7 +112,11 @@ in
           for item in ${kdir}/*; do
             _name=$(basename "$item")
             if [ "$_name" = "Makefile" ]; then
-              cp "$item" "$_writable_kdir/Makefile"
+              # Patch KBUILD_OUTPUT to point at our writable overlay;
+              # the original value is a read-only nix store path that
+              # Kbuild's outputmakefile target cannot write to.
+              sed "s|KBUILD_OUTPUT = .*|KBUILD_OUTPUT = $_writable_kdir|" \
+                "$item" > "$_writable_kdir/Makefile"
             else
               ln -sf "$item" "$_writable_kdir/$_name"
             fi
