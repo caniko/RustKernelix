@@ -1,6 +1,11 @@
 {
   description = "RustKernelix — Framework for out-of-tree Rust Linux kernel modules";
 
+  nixConfig = {
+    extra-substituters = ["https://rustkernelix.cachix.org"];
+    extra-trusted-public-keys = ["rustkernelix.cachix.org-1:PLACEHOLDER"];
+  };
+
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
@@ -99,6 +104,18 @@
           inherit src pname version;
         };
     };
+
+    nixosModules.default = ./modules/kernel-module.nix;
+
+    templates.default = {
+      path = ./templates/default;
+      description = "Scaffold a new out-of-tree Rust kernel module project";
+    };
+
+    formatter = forAllSystems (system: let
+      pkgs = import nixpkgs {inherit system;};
+    in
+      pkgs.alejandra);
 
     devShells = forAllSystems (system: let
       pkgs = mkPkgsRust system;

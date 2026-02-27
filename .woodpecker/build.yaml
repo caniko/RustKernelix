@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+# Woodpecker CI pipeline for RustKernelix.
+#
+# Achieves Garnix-level integration on Codeberg:
+#   1. Runs `nix flake check` on every push/PR
+#   2. Builds ALL flake outputs via devour-flake
+#   3. Pushes everything to Cachix binary cache
+#
+# Setup:
+#   - Add CACHIX_AUTH_TOKEN as a Woodpecker secret
+#   - Create the cache: `cachix create rustkernelix`
+
+when:
+  - event: [push, pull_request]
+
+steps:
+  - name: check
+    image: nixos/nix
+    environment:
+      NIX_CONFIG: "extra-experimental-features = nix-command flakes"
+    commands:
+      - nix flake check --no-update-lock-file -L
+
+  - name: build-and-cache
+    image: nixos/nix
+    environment:
+      NIX_CONFIG: "extra-experimental-features = nix-command flakes"
+      CACHIX_AUTH_TOKEN:
+        from_secret: cachix_auth_token
+    commands:
+      - nix profile install nixpkgs#cachix
+      - cachix authtoken "$CACHIX_AUTH_TOKEN"
+      - cachix use rustkernelix
+      - |
+        nix build github:srid/devour-flake \
+          -L --no-link --print-out-paths \
+          --override-input flake . \
+          | cachix push rustkernelix
+    when:
+      - event: push
+        branch: main
