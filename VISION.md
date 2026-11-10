@@ -22,8 +22,9 @@ wrong.
   bindgen invocations, and ABI compatibility come from the kernel itself.
 - ABI-safe by construction: modules build with the kernel's own rustc from
   `moduleBuildDependencies`, not with a separately chosen compiler.
-- Fail early at evaluation time: a `rustcVersion` mismatch is caught before the
-  build starts, and the same expectation is re-checked at build time.
+- Fail early: a `rustcVersion` mismatch fails the build's pre-build check before
+  any module compilation, and a kernel without Rust support is rejected at
+  evaluation time.
 - Deployment is declarative: the NixOS module wires packages into
   `boot.extraModulePackages` and module names into `boot.kernelModules`.
 - The dev shell matches the build: rust-analyzer, clippy, and fmt come from the
